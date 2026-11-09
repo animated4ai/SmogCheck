@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SmogCheck — Picture Se Smog Maloom Karein</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#0f1b2d; --card:#1a2b45; --card2:#22375a;
+    --txt:#f0f5ff; --dim:#9db1d0; --acc:#38bdf8; --acc2:#0ea5e9;
+    --green:#22c55e; --yellow:#eab308; --orange:#f97316; --red:#ef4444; --maroon:#991b1b;
+  }
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(160deg,#0b1526 0%,#0f1b2d 40%,#13253f 100%);color:var(--txt);min-height:100vh;padding-bottom:32px}
+  .hero{background:linear-gradient(135deg,#0369a1 0%,#0ea5e9 50%,#38bdf8 100%);padding:28px 20px 34px;border-radius:0 0 28px 28px;text-align:center;box-shadow:0 8px 30px rgba(14,165,233,.35);position:relative;overflow:hidden}
+  .hero::after{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:rgba(255,255,255,.12);border-radius:50%}
+  .hero::before{content:'';position:absolute;bottom:-60px;left:-30px;width:180px;height:180px;background:rgba(255,255,255,.08);border-radius:50%}
+  .hero h1{font-size:30px;font-weight:800;letter-spacing:.5px;position:relative;z-index:1}
+  .hero p{font-size:14px;opacity:.92;margin-top:6px;position:relative;z-index:1}
+  .cloud{font-size:42px;position:relative;z-index:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
+  .wrap{max-width:480px;margin:0 auto;padding:0 16px}
+  .card{background:var(--card);border-radius:20px;padding:20px;margin-top:18px;box-shadow:0 6px 20px rgba(0,0,0,.35);border:1px solid rgba(56,189,248,.12)}
+  .card h2{font-size:17px;margin-bottom:4px}
+  .card .sub{font-size:13px;color:var(--dim);margin-bottom:14px}
+  .btnrow{display:flex;gap:12px}
+  .btn{flex:1;border:none;border-radius:16px;padding:16px 10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .12s,box-shadow .12s;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .btn:active{transform:scale(.96)}
+  .btn .ico{font-size:30px}
+  .btn-cam{background:linear-gradient(135deg,#0ea5e9,#0369a1)}
+  .btn-gal{background:linear-gradient(135deg,#8b5cf6,#6d28d9)}
+  .btn-an{background:linear-gradient(135deg,#22c55e,#15803d);flex:none;width:100%;flex-direction:row;justify-content:center;font-size:17px;padding:16px}
+  .btn-an .ico{font-size:24px}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  #preview{width:100%;border-radius:14px;margin-top:14px;display:none;border:2px solid rgba(56,189,248,.25);max-height:280px;object-fit:cover}
+  #result{display:none}
+  .gauge{height:18px;border-radius:10px;background:#0b1526;overflow:hidden;margin:14px 0 6px;position:relative}
+  .gauge-fill{height:100%;border-radius:10px;transition:width 1s ease;background:linear-gradient(90deg,var(--green),var(--yellow),var(--orange),var(--red))}
+  .lvl{font-size:26px;font-weight:800;text-align:center;margin:8px 0 2px}
+  .lvl-sub{text-align:center;color:var(--dim);font-size:13px;margin-bottom:10px}
+  .score{text-align:center;font-size:13px;color:var(--dim)}
+  .score b{font-size:20px;color:var(--txt)}
+  .tips{margin-top:14px}
+  .tip{display:flex;gap:10px;background:var(--card2);border-radius:12px;padding:11px 12px;margin-bottom:8px;font-size:13.5px;line-height:1.5}
+  .tip .e{font-size:19px;flex:none}
+  .scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);margin-top:2px}
+  .disc{font-size:11.5px;color:var(--dim);text-align:center;margin-top:16px;line-height:1.6;padding:0 8px}
+  .steps{display:flex;gap:8px;margin-top:6px}
+  .step{flex:1;text-align:center;font-size:11.5px;color:var(--dim);background:#0b1526;border-radius:10px;padding:9px 4px}
+  .step b{display:block;font-size:16px;margin-bottom:2px}
+  .loader{display:none;text-align:center;padding:18px}
+  .spin{width:44px;height:44px;border:4px solid rgba(56,189,248,.25);border-top-color:var(--acc);border-radius:50%;margin:0 auto 10px;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="cloud">🌫️</div>
+  <h1>SmogCheck</h1>
+  <p>Picture se smog ka andaza — asaan aur tez</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <h2>📸 Tasveer Lein</h2>
+    <div class="sub">Aasman ya bahar ki saaf tasveer lein (din ki roshni me behtar natija)</div>
+    <div class="btnrow">
+      <button class="btn btn-cam" id="btnCam"><span class="ico">📷</span>Camera</button>
+      <button class="btn btn-gal" id="btnGal"><span class="ico">🖼️</span>Gallery</button>
+    </div>
+    <input type="file" id="fileCam" accept="image/*" capture="environment" style="display:none">
+    <input type="file" id="fileGal" accept="image/*" style="display:none">
+    <img id="preview" alt="preview">
+    <div style="margin-top:14px">
+      <button class="btn btn-an" id="btnAnalyze" disabled><span class="ico">🔍</span>Smog Check Karein</button>
+    </div>
+    <div class="steps">
+      <div class="step"><b>1</b>Tasveer lein</div>
+      <div class="step"><b>2</b>Analyze dabayein</div>
+      <div class="step"><b>3</b>Natija dekhein</div>
+    </div>
+  </div>
+
+  <div class="loader" id="loader"><div class="spin"></div><div>Tasveer ka tajziya ho raha hai...</div></div>
+
+  <div class="card" id="result">
+    <h2>📊 Natija</h2>
+    <div class="sub" id="rTime"></div>
+    <div class="lvl" id="rLevel">—</div>
+    <div class="lvl-sub" id="rLevelUr">—</div>
+    <div class="gauge"><div class="gauge-fill" id="rGauge" style="width:0%"></div></div>
+    <div class="scale"><span>Saaf</span><span>Halki</span><span>Darmiyani</span><span>Shadeed</span></div>
+    <div class="score" style="margin-top:10px">Smog Score: <b id="rScore">0</b>/100</div>
+    <div class="tips" id="rTips"></div>
+  </div>
+
+  <div class="disc">
+    ⚠️ Ye andaza tasveer ke tajziye par mabni hai, scientific pemaish nahi. Sehat ke faislon ke liye sarkaari AQI data bhi dekhein.
+  </div>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var imgEl=$('preview'), currentImg=null;
+
+$('btnCam').onclick=function(){$('fileCam').click()};
+$('btnGal').onclick=function(){$('fileGal').click()};
+function onFile(f){
+  if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    currentImg=new Image();
+    currentImg.onload=function(){
+      imgEl.src=e.target.result; imgEl.style.display='block';
+      $('btnAnalyze').disabled=false;
+      $('result').style.display='none';
+    };
+    currentImg.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+$('fileCam').onchange=function(){onFile(this.files[0])};
+$('fileGal').onchange=function(){onFile(this.files[0])};
+
+function analyze(){
+  // Downscale for speed
+  var MAX=480, w=currentImg.naturalWidth, h=currentImg.naturalHeight;
+  var s=Math.min(1, MAX/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
+  var c=document.createElement('canvas'); c.width=w; c.height=h;
+  var x=c.getContext('2d'); x.drawImage(currentImg,0,0,w,h);
+  var d=x.getImageData(0,0,w,h).data;
+  var n=w*h, sB=0, sS=0, sBr=0, sR=0, sBc=0, cnt=0;
+  // Focus on upper 2/3 (sky region), sample every 4th pixel
+  var yLimit=Math.floor(h*0.7);
+  for(var i=0;i<n;i+=4){
+    if(Math.floor(i/w)>yLimit) continue;
+    var r=d[i*4], g=d[i*4+1], b=d[i*4+2];
+    sR += r; sBc += b;
+    sB += (b-r + b-g)/2;                       // blue dominance (+ve = blue sky)
+    var mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+    sS += mx===0?0:(mx-mn)/mx;                 // saturation
+    sBr += (r+g+b)/3/255;                      // brightness
+    cnt++;
+  }
+  if(cnt===0)cnt=1;
+  var avgB=sB/cnt, avgS=sS/cnt, avgBr=sBr/cnt;
+  var avgR=sR/cnt, avgBc=sBc/cnt;
+  // Indoor guard: warm indoor light (red >> blue) with decent brightness and
+  // no blue dominance = room photo, no sky visible — score would be garbage.
+  var indoor = (avgR-avgBc)>30 && avgBr>0.40 && avgB<0;
+  if(indoor) return {score:-1, reliable:false, indoor:true};
+  var score=(55-avgB*0.55)*(0.55+0.9*(1-avgS));
+  // Cloud guard: very bright + neutral = clouds, not smog
+  if(avgBr>0.82 && Math.abs(avgB)<18) score=Math.min(score,32);
+  else if(avgBr>0.78 && Math.abs(avgB)<12 && avgS<0.08) score=Math.min(score,45);
+  score=Math.round(Math.min(100,Math.max(0,score)));
+  var reliable = avgBr > 0.18;
+  return {score:score, reliable:reliable};
+}
+
+var LEVELS=[
+  {max:20,  en:'Clear Air',       ur:'Hawa saaf hai',            col:'#22c55e',
+   tips:[['😊','Hawa saaf hai! Bahar sair aur exercise ke liye behtareen waqt.'],['🪟','Khirkiyan khol kar taza hawa lein.']]},
+  {max:40,  en:'Light Smog',      ur:'Halki smog',               col:'#eab308',
+   tips:[['😷','Hassas afraad (bache, buzurg) mask pehnein.'],['🏃','Sakht exercise se parhez karein.']]},
+  {max:60,  en:'Moderate Smog',   ur:'Darmiyani smog',           col:'#f97316',
+   tips:[['😷','Bahar nikalte waqt mask zaroor pehnein.'],['🚗','Gari ka sheesha band rakhein, AC recirculation par.'],['💧','Pani zyada piyen, aankhein jalien to dho lein.']]},
+  {max:80,  en:'Heavy Smog',      ur:'Shadeed smog',             col:'#ef4444',
+   tips:[['🏠','Ghair zaroori bahar nikalne se parhez karein.'],['😷','N95 mask istemal karein.'],['👶','Bachon aur mareezon ko ghar par rakhein.'],['🪟','Khirkiyan band rakhein.']]},
+  {max:101, en:'Severe Smog',     ur:'Intehai khatarnaak smog',  col:'#991b1b',
+   tips:[['🚨','Bahar nikalna khatarnaak — ghar par rahein.'],['😷','N95 mask ke baghair bahar na niklein.'],['🏥','Saans me dushwari ho to foran doctor se rujoo karein.'],['📢','AQI updates ke liye news dekhein.']]}
+];
+
+$('btnAnalyze').onclick=function(){
+  if(!currentImg)return;
+  $('loader').style.display='block';
+  $('result').style.display='none';
+  setTimeout(function(){
+    var r=analyze();
+    var th='';
+    if(r.indoor){
+      $('rLevel').textContent='Indoor Photo'; $('rLevel').style.color='#a855f7';
+      $('rLevelUr').textContent='Kamre ke andar ki tasveer';
+      $('rScore').textContent='—';
+      $('rGauge').style.width='0%';
+      th='<div class="tip"><span class="e">🏠</span><span>Ye kamre ke andar ki tasveer lag rahi hai — is me aasmaan nazar nahi aa raha, is liye smog ka andaza nahi lagaya ja sakta.</span></div>'
+        +'<div class="tip"><span class="e">📷</span><span>Bahar ja kar aasmaan ki taraf photo lein, phir Analyze dabayein.</span></div>';
+      $('rTips').innerHTML=th;
+      $('loader').style.display='none';
+      $('result').style.display='block';
+      if(typeof $('result').scrollIntoView==='function'){$('result').scrollIntoView({behavior:'smooth'});}
+      return;
+    }
+    var lv=LEVELS[0];
+    for(var i=0;i<LEVELS.length;i++){ if(r.score<LEVELS[i].max){lv=LEVELS[i];break;} }
+    $('rLevel').textContent=lv.en; $('rLevel').style.color=lv.col;
+    $('rLevelUr').textContent=lv.ur;
+    $('rScore').textContent=r.score;
+    $('rGauge').style.width=r.score+'%';
+    var now=new Date();
+    $('rTime').textContent='Checked: '+now.toLocaleDateString()+' '+now.toLocaleTimeString();
+    var th='';
+    if(!r.reliable) th+='<div class="tip"><span class="e">🌙</span><span>Tasveer bohat andheri hai — din ki roshni me dobara try karein.</span></div>';
+    lv.tips.forEach(function(t){ th+='<div class="tip"><span class="e">'+t[0]+'</span><span>'+t[1]+'</span></div>'; });
+    $('rTips').innerHTML=th;
+    $('loader').style.display='none';
+    $('result').style.display='block';
+    // scrollIntoView may not exist in minimal file viewers — never let it break the flow
+    if(typeof $('result').scrollIntoView==='function'){$('result').scrollIntoView({behavior:'smooth'});}
+  }, 600);
+};
+</script>
+</body>
+</html>
